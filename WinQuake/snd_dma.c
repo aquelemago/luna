@@ -205,6 +205,12 @@ void S_Init (void)
 
 	S_Startup ();
 
+	if (!sound_started)
+	{	// no device (e.g. no /dev/dsp): keep going silent, like -nosound
+		Con_Printf ("Sound disabled: no audio device\n");
+		return;
+	}
+
 	SND_InitScaletable ();
 
 	known_sfx = Hunk_AllocName (MAX_SFX*sizeof(sfx_t), "sfx_t");

@@ -371,11 +371,7 @@ int main (int c, char **v)
 	parms.argc = com_argc;
 	parms.argv = com_argv;
 
-#ifdef GLQUAKE
-	parms.memsize = 16*1024*1024;
-#else
-	parms.memsize = 8*1024*1024;
-#endif
+	parms.memsize = 64*1024*1024;	// 8/16 MB was too small for today's maps and mods
 
 	j = COM_CheckParm("-mem");
 	if (j)

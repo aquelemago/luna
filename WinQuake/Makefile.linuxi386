@@ -25,7 +25,7 @@ ARCH=i386
 endif
 NOARCH=noarch
 
-MOUNT_DIR=/grog/Projects/WinQuake
+MOUNT_DIR=.
 MASTER_DIR=/grog/Projects/QuakeMaster
 MESA_DIR=/usr/local/src/Mesa-2.6
 TDFXGL_DIR = /home/zoid/3dfxgl
@@ -34,15 +34,14 @@ BUILD_DEBUG_DIR=debug$(ARCH)$(GLIBC)
 BUILD_RELEASE_DIR=release$(ARCH)$(GLIBC)
 
 EGCS=/usr/local/egcs-1.1.2/bin/gcc
-CC=$(EGCS)
+CC=gcc
 
-BASE_CFLAGS=-Dstricmp=strcasecmp
-RELEASE_CFLAGS=$(BASE_CFLAGS) -g -mpentiumpro -O6 -ffast-math -funroll-loops \
-	-fomit-frame-pointer -fexpensive-optimizations
+BASE_CFLAGS=-m32 -std=gnu89 -fcommon -fno-strict-aliasing -fno-aggressive-loop-optimizations -fno-pie -Dstricmp=strcasecmp
+RELEASE_CFLAGS=$(BASE_CFLAGS) -g -O2
 DEBUG_CFLAGS=$(BASE_CFLAGS) -g
-LDFLAGS=-lm
+LDFLAGS=-m32 -no-pie -lm
 SVGALDFLAGS=-lvga
-XLDFLAGS=-L/usr/X11R6/lib -lX11 -lXext -lXxf86dga
+XLDFLAGS=-lX11 -lXext
 XCFLAGS=-DX11
 
 MESAGLLDFLAGS=-L/usr/X11/lib -L/usr/local/lib -L$(MESA_DIR)/lib -lMesaGL -lglide2x -lX11 -lXext -ldl
@@ -64,11 +63,12 @@ DO_GL_AS=$(CC) $(CFLAGS) $(GLCFLAGS) -DELF -x assembler-with-cpp -o $@ -c $<
 # SETUP AND BUILD
 #############################################################################
 
-TARGETS=$(BUILDDIR)/bin/squake \
-	$(BUILDDIR)/bin/glquake \
-	$(BUILDDIR)/bin/glquake.glx \
-	$(BUILDDIR)/bin/glquake.3dfxgl \
-	$(BUILDDIR)/bin/quake.x11
+# svgalib, 3dfx and DGA are gone from modern Linux; only X11 builds today
+TARGETS=$(BUILDDIR)/bin/quake.x11
+	# $(BUILDDIR)/bin/squake
+	# $(BUILDDIR)/bin/glquake
+	# $(BUILDDIR)/bin/glquake.glx
+	# $(BUILDDIR)/bin/glquake.3dfxgl
 	# $(BUILDDIR)/bin/unixded
 
 build_debug:
@@ -78,7 +78,7 @@ build_debug:
 		$(BUILD_DEBUG_DIR)/squake \
 		$(BUILD_DEBUG_DIR)/unixded \
 		$(BUILD_DEBUG_DIR)/x11
-	$(MAKE) targets BUILDDIR=$(BUILD_DEBUG_DIR) CFLAGS="$(DEBUG_CFLAGS)"
+	$(MAKE) -f $(firstword $(MAKEFILE_LIST)) targets BUILDDIR=$(BUILD_DEBUG_DIR) CFLAGS="$(DEBUG_CFLAGS)"
 
 build_release:
 	@-mkdir $(BUILD_RELEASE_DIR) \
@@ -87,7 +87,7 @@ build_release:
 		$(BUILD_RELEASE_DIR)/squake \
 		$(BUILD_RELEASE_DIR)/unixded \
 		$(BUILD_RELEASE_DIR)/x11
-	$(MAKE) targets BUILDDIR=$(BUILD_RELEASE_DIR) CFLAGS="$(RELEASE_CFLAGS)"
+	$(MAKE) -f $(firstword $(MAKEFILE_LIST)) targets BUILDDIR=$(BUILD_RELEASE_DIR) CFLAGS="$(RELEASE_CFLAGS)"
 
 all: build_debug build_release
 
